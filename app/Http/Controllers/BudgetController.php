@@ -2,63 +2,80 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Budget;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BudgetController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Get the budget for the current user for a specific month
+    public function getBudgetForMonth($month, $year)
     {
-        //
+        $userId = Auth::id();
+
+        $budget = Budget::where('user_id', $userId)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->first();
+
+        if (!$budget) {
+            return response()->json(['message' => 'No budget found for this month'], 404);
+        }
+
+        // Get the total expenses for the month
+        $totalExpenses = $budget->expenses()->sum('amount');
+
+        return response()->json([
+            'budget' => $budget->amount,
+            'totalExpenses' => $totalExpenses,
+            'balance' => $budget->amount - $totalExpenses, // Remaining budget
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Store a new budget
     public function store(Request $request)
     {
-        //
+        $userId = Auth::id();
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer',
+        ]);
+
+        $budget = Budget::updateOrCreate(
+            ['user_id' => $userId, 'month' => $validated['month'], 'year' => $validated['year']],
+            ['amount' => $validated['amount']]
+        );
+
+        return response()->json($budget, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Update an existing budget
+    public function update(Request $request, $id)
     {
-        //
+    $budget = Budget::findOrFail($id);
+
+        $this->authorize('update', $budget);
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric',
+        ]);
+
+        $budget->update($validated);
+
+        return response()->json($budget);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    // Delete a budget
+    public function destroy($id)
     {
-        //
-    }
+        $budget = Budget::findOrFail($id);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        $this->authorize('delete', $budget);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $budget->delete();
+
+        return response()->json(['message' => 'Budget deleted successfully']);
     }
 }

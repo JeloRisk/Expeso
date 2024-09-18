@@ -9,7 +9,7 @@ import Expense from "./views/Expense";
 import Dashboard from "./views/Dashboard";
 import Report from "./views/Report";
 import GuestLayout from "./template/GuestLayout";
-
+import BudgetExpense from "./views/BudgetExpense.jsx";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -25,6 +25,11 @@ const router = createBrowserRouter([
             { path: "/dashboard", element: <Dashboard /> },
             { path: "/budget", element: <Budget /> },
             { path: "/report", element: <Report /> },
+
+            {
+                path: "/budgetExpense",
+                element: <BudgetExpense></BudgetExpense>,
+            },
         ],
     },
     {

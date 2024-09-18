@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { Outlet, Link } from "react-router-dom";
-// import "./DefaultLayout.css";
-import { Navigate, useLocation } from "react-router-dom";
+import { Outlet, Link, Navigate, useLocation } from "react-router-dom";
 import { useStateContext } from "../context/ContextProvider";
 import axiosClient from "../axios-client";
 import dashboard from "../assets/icons/dashboard.svg";
 import wallet from "../assets/icons/wallet.svg";
 import add from "../assets/icons/add.svg";
-
+import AddToggleModal from "../views/modal/AddToggleModal";
 import AddExpenseModal from "../views/modal/AddExpenseModal";
+import AddBudgetModal from "../views/modal/AddBudgetModal"; // Import the AddBudgetModal
+
 function DefaultLayout() {
     const location = useLocation();
     const modalRef = useRef(null);
@@ -16,13 +16,20 @@ function DefaultLayout() {
     const [sidebarVisible, setSidebarVisible] = useState(!isMobile);
     const { user, token, setUser, setToken } = useStateContext();
     const [isModalOpenSmall, setIsModalOpenSmall] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+    const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+    const [modalOption, setModalOption] = useState(null); // To handle which modal to show
 
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
+    const [addModal, setAddModal] = useState(false);
 
-    const toggleModal = () => {
+    const toggleModal = (option) => {
+        setModalOption(option);
         setIsModalOpenSmall(!isModalOpenSmall);
+    };
+
+    const toggleModalAdd = (option) => {
+        setModalOption(option);
+        setAddModal(!addModal);
     };
 
     const toggleSidebar = () => {
@@ -30,16 +37,15 @@ function DefaultLayout() {
             setSidebarVisible(!sidebarVisible);
         }
     };
+
     const onLogout = (ev) => {
         ev.preventDefault();
-
-        console.log("oaky");
-
         axiosClient.post("/logout").then(() => {
             setUser({});
             setToken(null);
         });
     };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -57,6 +63,25 @@ function DefaultLayout() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isModalOpenSmall]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (modalRef.current && !modalRef.current.contains(event.target)) {
+                setAddModal(false);
+            }
+        };
+
+        if (addModal) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [addModal]);
+
     useEffect(() => {
         axiosClient.get("/user").then(({ data }) => {
             setUser(data);
@@ -91,20 +116,43 @@ function DefaultLayout() {
                 <div className="right-tb">
                     <div className="logo">Expeso</div>
                 </div>
-
                 <div className="user-info">
-                    <div onClick={openModal} className="addButon2">
+                    <div onClick={() => toggleModalAdd()} className="addButon2">
                         <img src={add} alt="Add Icon" className="icon" />
-                        Add Expense
-                    </div>{" "}
-                    {isModalOpen && (
-                        <AddExpenseModal
-                            isOpen={isModalOpen}
-                            onClose={() => {
-                                closeModal();
+                        Add
+                    </div>
+                    {addModal && (
+                        <AddToggleModal
+                            isOpen={addModal}
+                            onClose={(option) => {
+                                setAddModal(false);
+                                if (option === "expense") {
+                                    console.log("hello");
+                                    setIsExpenseModalOpen(true);
+                                } else if (option === "budget") {
+                                    setIsBudgetModalOpen(true);
+                                }
                             }}
                         />
                     )}
+                    {isExpenseModalOpen && (
+                        <AddExpenseModal
+                            isOpen={isExpenseModalOpen}
+                            onClose={() => setIsExpenseModalOpen(false)}
+                        />
+                    )}
+                    {isBudgetModalOpen && (
+                        <AddBudgetModal
+                            isOpen={isBudgetModalOpen}
+                            onClose={() => setIsBudgetModalOpen(false)}
+                        />
+                    )}
+                    {/* {modalOption === "budget" && (
+                        <AddBudgetModal
+                            isOpen={modalOption === "budget"}
+                            onClose={() => setIsExpenseModalOpen(false)}
+                        />
+                    )} */}
                     <div className="profile-container" onClick={toggleModal}>
                         <div className="profile-picture"></div>
                     </div>
@@ -165,13 +213,15 @@ function DefaultLayout() {
                         </Link>
 
                         <Link
-                            to="/report"
+                            to="/budgetExpense"
                             className={`nav-link ${
-                                location.pathname === "/report" ? "active" : ""
+                                location.pathname === "/budgetExpense"
+                                    ? "active"
+                                    : ""
                             }`}
                             onClick={toggleSidebar}
                         >
-                            Report
+                            Budget and Expense
                         </Link>
                     </nav>
                 </aside>

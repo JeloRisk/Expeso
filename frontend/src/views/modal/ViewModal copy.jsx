@@ -1,6 +1,6 @@
 import "../modal.css";
 
-function ViewModal({ isOpen, onClose, expense, onDelete }) {
+function ViewModal({ isOpen, onClose, expense }) {
     if (!isOpen) return null;
 
     return (
@@ -60,10 +60,15 @@ function ViewModal({ isOpen, onClose, expense, onDelete }) {
                     </div>
                 </div>
                 <div className="modal-footer">
-             
                     <button
-                        onClick={() => onDelete(expense)}
+                        className="edit-button"
+                        onClick={() => alert("Edit functionality here")}
+                    >
+                        Edit
+                    </button>
+                    <button
                         className="delete-button"
+                        onClick={() => alert("Delete functionality here")}
                     >
                         Delete
                     </button>

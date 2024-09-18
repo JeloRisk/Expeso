@@ -29,9 +29,18 @@ function AddExpenseModal({ isOpen, onClose }) {
     const handleSubmit = (event) => {
         event.preventDefault();
 
+        // Get the selected category name
+        const selectedCategory = expenseCategories.find(
+            (cat) => cat.category_id === parseInt(category_id)
+        );
+
+        // If expenseName is empty, set it to the selected category name
+        const finalExpenseName =
+            expenseName || selectedCategory?.name || "Uncategorized";
+
         axiosClient
             .post("/expenses", {
-                expenseName,
+                expenseName: finalExpenseName, // Use the modified name
                 amount: parseFloat(amount),
                 category_id,
                 date,
@@ -55,8 +64,6 @@ function AddExpenseModal({ isOpen, onClose }) {
                 }, 5000);
             })
             .catch((error) => {
-                console.log(category_id);
-
                 console.error("Error adding expense:", error);
             });
     };
@@ -102,8 +109,7 @@ function AddExpenseModal({ isOpen, onClose }) {
                                     key={category.category_id || index}
                                     value={category.category_id}
                                 >
-                                    {category.category_id}
-                                    {/* {category.name} */}
+                                    {category.category_id} - {category.name}
                                 </option>
                             ))}
                         </select>
