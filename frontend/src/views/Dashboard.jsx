@@ -18,8 +18,7 @@ import {
     PointElement,
     LineElement,
 } from "chart.js";
-import "./dashboard.css"; // Assuming you add your styles here
-
+import "./dashboard.css";
 // Register the necessary chart elements
 ChartJS.register(
     ArcElement,
@@ -36,13 +35,35 @@ function Dashboard() {
     const navigate = useNavigate();
     const [budgetData, setBudgetData] = useState(null);
     const [expenseByCategory, setExpenseByCategory] = useState([]);
-    const [timeRange, setTimeRange] = useState("monthly"); // State to manage selected time range
+    const [timeRange, setTimeRange] = useState("monthly"); //  to manage selected time range
     const [lineData, setLineData] = useState([]);
     const [error, setError] = useState("");
-    const [recentTransactions, setRecentTransactions] = useState([]); // For recent transactions only
-    const [timeRangeTransactions, setTimeRangeTransactions] = useState([]); // For time-range based transactions
+    const [recentTransactions, setRecentTransactions] = useState([]); //  recent transactions only
+    const [timeRangeTransactions, setTimeRangeTransactions] = useState([]); //  time-range based transactions
+    const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+    const fetchData = async (url, setState, errorMsg) => {
+        try {
+            const { data } = await axiosClient.get(url);
+            setState(data);
+        } catch {
+            setError(errorMsg);
+        }
+    };
 
-    // Fetch budget and category summary data
+    // fetch the
     useEffect(() => {
         axiosClient
             .get(`/getSummary`)
@@ -67,8 +88,8 @@ function Dashboard() {
             .get(url)
             .then(({ data }) => {
                 console.log(data);
-                setLineData(data); // Set time-range data for the line chart
-                setTimeRangeTransactions(data); // Set time-range transactions
+                setLineData(data); //  time-range data for the line chart
+                setTimeRangeTransactions(data); //  time-range transactions
             })
             .catch(() => {
                 setError("Error fetching time range data");
@@ -76,30 +97,25 @@ function Dashboard() {
     }, [timeRange]);
 
     // Fetch recent transactions
+    // useEffect(() => {
+    //     axiosClient
+    //         .get(`/recentTransactions`)
+    //         .then(({ data }) => {
+    //             setRecentTransactions(data); // Set recent transactions
+    //         })
+    //         .catch(() => {
+    //             setError("Error fetching transactions");
+    //         });
+    // }, []);
+
     useEffect(() => {
-        axiosClient
-            .get(`/recentTransactions`)
-            .then(({ data }) => {
-                setRecentTransactions(data); // Set recent transactions
-            })
-            .catch(() => {
-                setError("Error fetching transactions");
-            });
+        fetchData(
+            "/recentTransactions",
+            setRecentTransactions,
+            "Error fetching transactions"
+        );
     }, []);
-    const monthNames = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ];
+
     const currentMonth = new Date().getMonth() + 1;
 
     const calculateYAxisSteps = (data) => {
@@ -124,17 +140,12 @@ function Dashboard() {
         )
         .map((item) => item.total_spent);
 
-    // Calculate the steps
     const [step1, step2, step3] = calculateYAxisSteps(lineDataValues);
     const lineChartData = {
         labels: lineData
-            .filter((item) => {
-                if (timeRange === "monthly") {
-                    // Exclude future months
-                    return item.month <= currentMonth;
-                }
-                return true; // For other time ranges, include all
-            })
+            .filter((item) =>
+                timeRange === "monthly" ? item.month <= currentMonth : true
+            )
             .map((item) =>
                 timeRange === "weekly"
                     ? `Week ${item.week}`
@@ -147,14 +158,7 @@ function Dashboard() {
                 label: `Expenses (${
                     timeRange.charAt(0).toUpperCase() + timeRange.slice(1)
                 })`,
-                data: lineData
-                    .filter((item) => {
-                        if (timeRange === "monthly") {
-                            return item.month <= currentMonth;
-                        }
-                        return true;
-                    })
-                    .map((item) => item.total_spent),
+                data: lineDataValues,
                 borderColor: "#4A90E2",
                 backgroundColor: "rgba(74, 144, 226, 0.2)",
                 fill: true,
@@ -216,20 +220,6 @@ function Dashboard() {
                             <div className="dashboard-wrapper-p1">
                                 <h3> Statistic</h3>
 
-                                {/* <div className="time-range-selector">
-                            <label htmlFor="timeRange">
-                                Select Time Range:{" "}
-                            </label>
-                            <select
-                                id="timeRange"
-                                value={timeRange}
-                                onChange={(e) => setTimeRange(e.target.value)}
-                            >
-                                <option value="yearly">Yearly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="weekly">Weekly</option>
-                            </select>
-                        </div> */}
                                 <div className="graph-placeholder">
                                     <Line
                                         data={lineChartData}
@@ -391,23 +381,6 @@ function Dashboard() {
             ) : (
                 <p className="loading-text">Loading...</p>
             )}
-            {/* <div className="time-range-transactions">
-                <h3>
-                    {timeRange.charAt(0).toUpperCase() + timeRange.slice(1)}{" "}
-                    Transactions
-                </h3>
-                {timeRangeTransactions.length > 0 ? (
-                    <ul>
-                        {timeRangeTransactions.map((e, index) => (
-                            <li key={index}>
-                                ₱{e.amount} - {e.description}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No transactions for the selected time range</p>
-                )}
-            </div> */}
         </div>
     );
 }

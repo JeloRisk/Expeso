@@ -217,9 +217,7 @@ body {
     padding: 1rem;
     background-color: var(--font-white);
     color: black;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid black;
-
+    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); */
     position: sticky;
     top: 0;
     z-index: 1;
@@ -289,7 +287,6 @@ body {
 
     background-color: #ffffff;
     color: black;
-    border-right: 1px solid #000;
 
 /* 
         display: none; 

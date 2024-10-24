@@ -250,11 +250,11 @@
 .small-db-box {
     display: flex;
     flex-direction: column;
-    padding: 0; /* Optional: remove or adjust padding */
+    padding: 0; 
     margin-top: 1rem;
     border-radius: 12px;
     background: white;
-    overflow: hidden; /* Ensures children stay within the border-radius */
+    overflow: hidden; 
 }
 
 /* 
