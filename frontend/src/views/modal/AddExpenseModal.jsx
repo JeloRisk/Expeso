@@ -163,14 +163,18 @@ function AddExpenseModal({ isOpen, onClose }) {
                             onChange={(e) => setBudgetId(e.target.value)}
                         />
                     </div>
-                    <button type="submit">Add Expense</button>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="cancel-button"
-                    >
-                        Cancel
-                    </button>
+                    <div className="form-footer">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="cancel-button"
+                        >
+                            Cancel
+                        </button>
+                        <button className="addButton" type="submit">
+                            Add Expense
+                        </button>
+                    </div>
                 </form>
 
                 {showSuccessModal && (
