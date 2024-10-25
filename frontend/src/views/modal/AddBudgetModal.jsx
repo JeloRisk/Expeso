@@ -95,14 +95,18 @@ function AddBudgetModal({ isOpen, onClose }) {
                             required
                         />
                     </div>
-                    <button type="submit">Add Budget</button>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="cancel-button"
-                    >
-                        Cancel
-                    </button>
+                    <div className="form-footer">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="cancel-button"
+                        >
+                            Cancel
+                        </button>{" "}
+                        <button type="submit" className="addButton">
+                            Add Budget
+                        </button>
+                    </div>
                 </form>
 
                 {showSuccessModal && (
